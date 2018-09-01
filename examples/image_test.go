@@ -35,11 +35,13 @@ func TestGGMatrix(t *testing.T) {
 
 	dfn := func(dc *gg.Context, x, y float64, ix, iy uint64) {
 		r := 10.0 + (15.0 * float64(ix) / float64(col)) + (15.0 * float64(iy) / float64(row))
-		c := color.RGBA{uint8(ix * 255 / col), uint8(iy * 255 / row), 150, 255}
-		dc.DrawCircle(x, y, r)
+
+		// Must use NRGBA. RGNA is an 8-bit alpha-premultipled color
+		c := color.NRGBA{uint8(ix * 255 / col), uint8(iy * 255 / row), 150, 180}
 		dc.SetColor(c)
+
+		dc.DrawCircle(x, y, r)
 		dc.Fill()
-		dc.ClearPath()
 	}
 
 	m.Draw(dc, dfn)
@@ -71,11 +73,13 @@ func BenchmarkRenderMatrix100(b *testing.B) {
 
 	dfn := func(dc *gg.Context, x, y float64, ix, iy uint64) {
 		r := 10.0 + (15.0 * float64(ix) / float64(col)) + (15.0 * float64(iy) / float64(row))
-		c := color.RGBA{uint8(ix * 255 / col), uint8(iy * 255 / row), 150, 255}
-		dc.DrawCircle(x, y, r)
+
+		// Must use NRGBA. RGNA is an 8-bit alpha-premultipled color
+		c := color.NRGBA{uint8(ix * 255 / col), uint8(iy * 255 / row), 150, 180}
 		dc.SetColor(c)
+
+		dc.DrawCircle(x, y, r)
 		dc.Fill()
-		dc.ClearPath()
 	}
 
 	for i := 0; i < b.N; i++ {
