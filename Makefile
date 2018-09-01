@@ -31,4 +31,8 @@ fmt: setup
 build:
 	go build -ldflags "$(LDFLAGS)" -o $@ $<
 
+## bench 
+bench:
+	go test -benchmem ./examples -bench ^Bench
+
 .PHONY: setup deps update test lint
