@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"image"
 	"image/color"
 	"testing"
 
@@ -12,11 +13,61 @@ import (
 )
 
 func TestGG(t *testing.T) {
-	dc := gg.NewContext(300, 300)
-	dc.DrawCircle(150, 150, 120)
+	W := 300
+	H := 300
+	var mask *image.Alpha
+
+	dc := gg.NewContext(W, H)
+	// mask
+
+	dc.DrawRectangle(10, 80, 280, 140)
+	dc.SetRGBA(0, 0, 0, 1)
+	dc.Fill()
+	mask = dc.AsMask()
+	dc.Clear()
+
+	dc.SetMask(mask)
+
+	// image render
+	dc.DrawCircle(float64(W/2), float64(H/2), 120)
 	dc.SetRGBA(245, 23, 22, 0.8)
 	dc.Fill()
-	dc.SavePNG("out.png")
+	dc.LoadFontFace("../assets/Lato-Regular.ttf", 32)
+	dc.DrawStringAnchored("Anchor Text", float64(W/2), float64(H/2), 0.5, 0.5)
+	dc.DrawString("Fill Text", float64(W/2), float64(H/2))
+
+	dc.SavePNG("demo.png")
+}
+
+func TestGGTextsize(t *testing.T) {
+	W := 300
+	H := 300
+	dc := gg.NewContext(W, H)
+
+	fLat16, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 16)
+	fLat64, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 64)
+
+	dc.DrawRectangle(10, 80, 280, 140)
+	dc.SetRGBA(245, 23, 22, 0.8)
+	dc.SetFontFace(fLat16)
+	var offset float64
+	offset = dc.FontHeight()
+	dc.DrawString("16 lag\r\n 4tghu", 0, float64(H/2)-offset)
+	dc.DrawString("16 Telagxt2", 0, float64(H/2))
+
+	dc.SetFontFace(fLat64)
+	offset = dc.FontHeight()
+	dc.DrawString("64 lagg", 60, float64(H/2))
+	dc.DrawString("64 lag2", 60, float64(H/2)+offset)
+
+	tbox := lgimage.TextBox{
+		FontFace: fLat16,
+		Text:     []string{"Code1", "nCode2", "code3"},
+	}
+
+	tbox.Draw(dc, 0, 0)
+
+	dc.SavePNG("font.png")
 }
 
 func TestGGMatrix(t *testing.T) {
