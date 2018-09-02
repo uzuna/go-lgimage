@@ -6,16 +6,29 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ColorMapFunc is wrapper interface of ColorMap
+type ColorMapFunc func(v Value) color.Color
+
+func (c ColorMapFunc) Color(v Value) color.Color {
+	return c(v)
+}
+func (c ColorMapFunc) List() []ExceptionColor {
+	return []ExceptionColor{}
+}
+
+// ColorMap is encoder of to Color from Value
 type ColorMap interface {
 	Color(v Value) color.Color
 	List() []ExceptionColor
 }
 
+// ExceptionColor declare the exception value to map to color
 type ExceptionColor struct {
 	String string
 	Color  color.Color
 }
 
+// ValueMapWithFunc wrap the input value and to map to index[0->1]
 type ValueMapWithFunc struct {
 	Vmin, Vmax    float64
 	ColorFunc     func(d float64) color.Color // 0 -> 1

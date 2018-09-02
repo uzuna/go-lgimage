@@ -64,6 +64,7 @@ func TestGGTextsize(t *testing.T) {
 	tbox := lgimage.TextBox{
 		FontFace: fLat16,
 		Text:     []string{"Code1", "nCode2", "code3"},
+		Color:    color.NRGBA{245, 23, 22, 220},
 	}
 	tbox.Draw(dc, 0, 0)
 
@@ -163,7 +164,7 @@ func TestGGWithBoxLayout(t *testing.T) {
 
 func TestGGColorScale(t *testing.T) {
 	dc := gg.NewContext(300, 300)
-	fLat16, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 12)
+	fLat16, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 14)
 	cs := lgimage.ColorScale{
 		X:    0,
 		Y:    0,
@@ -171,16 +172,44 @@ func TestGGColorScale(t *testing.T) {
 		H:    300,
 		Vmin: 0,
 		Vmax: 200,
-		Cfn: func(v float64) color.Color {
+		Cfn: lgimage.ColorMapFunc(func(x lgimage.Value) color.Color {
+			v := x.Value().(float64)
 			return color.NRGBA{uint8(v / 200 * 255), 128, 128, 255}
-		},
+		}),
 		Font: fLat16,
 	}
 
 	cs.DrawVertical(dc)
 
-	// dc.DrawRectangle(20, 20, 40, 40)
-	// dc.Fill()
+	{
+		cmap := make(map[string]color.Color)
+		cmap["under"] = color.NRGBA{0, 20, 255, 255}
+		cmap["over"] = color.NRGBA{255, 0, 0, 255}
+		cmap["Ng"] = color.NRGBA{255, 255, 0, 255}
+		cmap["nil"] = color.NRGBA{0, 255, 255, 255}
+
+		//
+		cfn := lgimage.ValueMapWithFunc{
+			Vmin: 0,
+			Vmax: 200,
+			ColorFunc: func(vi float64) color.Color {
+				return color.NRGBA{uint8(vi * 255), 128, 128, 255}
+			},
+			ExceptionList: cmap,
+		}
+		cs := lgimage.ColorScale{
+			X:    60,
+			Y:    0,
+			W:    40,
+			H:    300,
+			Vmin: 0,
+			Vmax: 200,
+			Cfn:  cfn,
+			Font: fLat16,
+		}
+
+		cs.DrawVertical(dc)
+	}
 
 	err := dc.SavePNG("colorscale.png")
 	assert.NoError(t, err)
