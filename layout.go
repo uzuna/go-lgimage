@@ -10,6 +10,8 @@ import (
 type Layout struct {
 	Header  Box
 	Content ScaleBox // AutoResize
+	RSide   Box
+	LSide   Box
 	Footer  Box
 }
 

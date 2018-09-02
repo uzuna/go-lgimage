@@ -161,6 +161,31 @@ func TestGGWithBoxLayout(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestGGColorScale(t *testing.T) {
+	dc := gg.NewContext(300, 300)
+	fLat16, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 12)
+	cs := lgimage.ColorScale{
+		X:    0,
+		Y:    0,
+		W:    40,
+		H:    300,
+		Vmin: 0,
+		Vmax: 200,
+		Cfn: func(v float64) color.Color {
+			return color.NRGBA{uint8(v / 200 * 255), 128, 128, 255}
+		},
+		Font: fLat16,
+	}
+
+	cs.DrawVertical(dc)
+
+	// dc.DrawRectangle(20, 20, 40, 40)
+	// dc.Fill()
+
+	err := dc.SavePNG("colorscale.png")
+	assert.NoError(t, err)
+}
+
 func BenchmarkRenderInsntance(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		dc := gg.NewContext(300, 300)
