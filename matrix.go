@@ -10,7 +10,7 @@ type Matrix struct {
 	Col, Row   uint64
 }
 
-type DrawFunc func(dc *gg.Context, x, y float64, ix, iy uint64)
+type DrawFunc func(dc *gg.Context, x, y, dx, dy float64, ix, iy uint64)
 
 // Draw is tell the point on matrix.
 func (m Matrix) Draw(dc *gg.Context, dfn DrawFunc) {
@@ -18,7 +18,7 @@ func (m Matrix) Draw(dc *gg.Context, dfn DrawFunc) {
 	dy := m.H / float64(m.Row)
 	for iy := uint64(0); iy < m.Row; iy++ {
 		for ix := uint64(0); ix < m.Col; ix++ {
-			dfn(dc, m.X+dx*float64(ix), m.Y+dy*float64(iy), ix, iy)
+			dfn(dc, m.X+dx*float64(ix), m.Y+dy*float64(iy), dx, dy, ix, iy)
 		}
 	}
 }

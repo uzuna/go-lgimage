@@ -60,11 +60,11 @@ func TestGGTextsize(t *testing.T) {
 	dc.DrawString("64 lagg", 60, float64(H/2))
 	dc.DrawString("64 lag2", 60, float64(H/2)+offset)
 
+	// Text Box
 	tbox := lgimage.TextBox{
 		FontFace: fLat16,
 		Text:     []string{"Code1", "nCode2", "code3"},
 	}
-
 	tbox.Draw(dc, 0, 0)
 
 	dc.SavePNG("font.png")
@@ -84,7 +84,7 @@ func TestGGMatrix(t *testing.T) {
 		Row: row, Col: col,
 	}
 
-	dfn := func(dc *gg.Context, x, y float64, ix, iy uint64) {
+	dfn := func(dc *gg.Context, x, y, dx, dy float64, ix, iy uint64) {
 		r := 10.0 + (15.0 * float64(ix) / float64(col)) + (15.0 * float64(iy) / float64(row))
 
 		// Must use NRGBA. RGNA is an 8-bit alpha-premultipled color
@@ -98,6 +98,66 @@ func TestGGMatrix(t *testing.T) {
 	m.Draw(dc, dfn)
 
 	err := dc.SavePNG("out.png")
+	assert.NoError(t, err)
+}
+
+func TestGGWithBoxLayout(t *testing.T) {
+	dc := gg.NewContext(300, 300)
+
+	l := lgimage.Layout{}
+	// Header
+	fLat16, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 16)
+	tbox := lgimage.TextBox{
+		FontFace: fLat16,
+		Text:     []string{"Code1"},
+		Color:    color.NRGBA{245, 23, 22, 220},
+	}
+	l.Header = tbox
+
+	// Scale box
+
+	content := func(dc *gg.Context, w, h, x, y float64) {
+		var min, ofx float64
+		min = w
+		if min > h {
+			min = h
+			ofx = (w - h) / 2 // centering
+		}
+		col := uint64(10)
+		row := uint64(10)
+
+		m := lgimage.Matrix{
+			X: x + ofx, Y: y,
+			W: min, H: min,
+			Row: row, Col: col,
+		}
+
+		dfn := func(dc *gg.Context, x, y, dx, dy float64, ix, iy uint64) {
+			r := 10.0 + (5.0 * float64(ix) / float64(col)) + (5.0 * float64(iy) / float64(row))
+
+			// Must use NRGBA. RGNA is an 8-bit alpha-premultipled color
+			c := color.NRGBA{uint8(ix * 255 / col), uint8(iy * 255 / row), 150, 180}
+			dc.SetColor(c)
+
+			dc.DrawCircle(x+(dx/2), y+(dy/2), r)
+			dc.Fill()
+		}
+
+		m.Draw(dc, dfn)
+	}
+	l.Content = lgimage.ScaleBoxFunc(content)
+
+	l.Draw(dc)
+
+	err := dc.SavePNG("layout_r1.png")
+	assert.NoError(t, err)
+
+	dc2 := gg.NewContext(300, 300)
+	tbox.Text = []string{"Title: Matrix demo", "Desc: Color Matrix", "X: 10, Y: 10"}
+	l.Header = tbox
+	l.Draw(dc2)
+
+	err = dc2.SavePNG("layout_r3.png")
 	assert.NoError(t, err)
 }
 
@@ -122,7 +182,7 @@ func BenchmarkRenderMatrix100(b *testing.B) {
 		Row: row, Col: col,
 	}
 
-	dfn := func(dc *gg.Context, x, y float64, ix, iy uint64) {
+	dfn := func(dc *gg.Context, x, y, dx, dy float64, ix, iy uint64) {
 		r := 10.0 + (15.0 * float64(ix) / float64(col)) + (15.0 * float64(iy) / float64(row))
 
 		// Must use NRGBA. RGNA is an 8-bit alpha-premultipled color
