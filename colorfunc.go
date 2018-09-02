@@ -16,14 +16,13 @@ type ExceptionColor struct {
 	Color  color.Color
 }
 
-type LinerColorMap struct {
-	Vmin, Vmax float64
-	Cmin, Cmax color.NRGBA
-	// cfn           func(v float64) color.Color
+type ValueMapWithFunc struct {
+	Vmin, Vmax    float64
+	ColorFunc     func(d float64) color.Color // 0 -> 1
 	ExceptionList map[string]color.Color
 }
 
-func (m LinerColorMap) Color(v Value) color.Color {
+func (m ValueMapWithFunc) Color(v Value) color.Color {
 	switch x := v.Value().(type) {
 	case float64:
 		// over range
@@ -40,34 +39,19 @@ func (m LinerColorMap) Color(v Value) color.Color {
 			return color.NRGBA{255, 255, 255, 255}
 		}
 
-		// cals
 		vd := m.Vmax - m.Vmin
 		d := (x - m.Vmin) / vd
-
-		// color
-		z := m.Cmin
-		a := m.Cmax
-		// zr, zg, zb, za := m.Cmin.RGBA()
-		// mr, mg, mb, ma := m.Cmax.RGBA()
-		dr, dg, db, da := a.R-z.R, a.G-z.G, a.B-z.B, a.A-z.A
-
-		//
-		return color.NRGBA{
-			z.R + uint8(float64(dr)*d),
-			z.G + uint8(float64(dg)*d),
-			z.B + uint8(float64(db)*d),
-			z.A + uint8(float64(da)*d),
-		}
+		return m.ColorFunc(d)
 	case string:
 		if c, ok := m.ExceptionList[x]; ok {
 			return c
 		}
 		return color.NRGBA{0, 0, 0, 0}
 	}
-	panic(errors.Errorf("INvalid type in LinerColorMap [%v]", v))
+	panic(errors.Errorf("Invalid type in ValueMapWithFunc [%v]", v))
 }
 
-func (m LinerColorMap) List() []ExceptionColor {
+func (m ValueMapWithFunc) List() []ExceptionColor {
 	var list []ExceptionColor
 	for k, v := range m.ExceptionList {
 		list = append(list, ExceptionColor{k, v})

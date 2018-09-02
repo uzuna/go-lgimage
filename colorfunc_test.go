@@ -34,11 +34,22 @@ func TestColorFunc(t *testing.T) {
 	cmap["N/A"] = color.NRGBA{255, 255, 0, 255}
 	cmap["nil"] = color.NRGBA{0, 255, 255, 255}
 
-	cmfn := LinerColorMap{
+	cmin := color.NRGBA{0, 128, 128, 128}
+	cmax := color.NRGBA{255, 128, 128, 128}
+	dr, dg, db, da := cmax.R-cmin.R, cmax.G-cmin.G, cmax.B-cmin.B, cmax.A-cmin.A
+	cfn := func(v float64) color.Color {
+		return color.NRGBA{
+			cmin.R + uint8(float64(dr)*v),
+			cmin.G + uint8(float64(dg)*v),
+			cmin.B + uint8(float64(db)*v),
+			cmin.A + uint8(float64(da)*v),
+		}
+	}
+
+	cmfn := ValueMapWithFunc{
 		Vmin:          0,
 		Vmax:          255,
-		Cmin:          color.NRGBA{0, 128, 128, 128},
-		Cmax:          color.NRGBA{255, 128, 128, 128},
+		ColorFunc:     cfn,
 		ExceptionList: cmap,
 	}
 
