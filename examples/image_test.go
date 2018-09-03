@@ -117,7 +117,6 @@ func TestGGWithBoxLayout(t *testing.T) {
 	l.Header = tbox
 
 	// Scale box
-
 	content := func(dc *gg.Context, w, h, x, y float64) {
 		var min, ofx float64
 		min = w
@@ -149,6 +148,39 @@ func TestGGWithBoxLayout(t *testing.T) {
 	}
 	l.Content = lgimage.ScaleBoxFunc(content)
 
+	// Left Side
+	fLat12, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 12)
+	lsfn := func(dc *gg.Context, w, h, x, y float64) {
+		cmap := make(map[string]color.Color)
+		cmap["under"] = color.NRGBA{0, 0, 180, 255}
+		cmap["over"] = color.NRGBA{180, 0, 0, 255}
+
+		cfn := lgimage.ValueMapWithFunc{
+			Vmin: 0,
+			Vmax: 200,
+			ColorFunc: func(vi float64) color.Color {
+				c := colorful.Hsv(230-vi*230, 0.8, 0.72)
+				return c
+			},
+			ExceptionList: cmap,
+		}
+		cs := lgimage.ColorScale{
+			X:    x,
+			Y:    y,
+			W:    w,
+			H:    h,
+			Vmin: 0,
+			Vmax: 200,
+			Cfn:  cfn,
+			Font: fLat12,
+		}
+
+		cs.DrawVertical(dc)
+	}
+	lside := lgimage.NewVerticalBoxMargine(lsfn, 4.0, 36)
+	l.LSide = lside
+
+	// Draw
 	l.Draw(dc)
 
 	err := dc.SavePNG("layout_r1.png")

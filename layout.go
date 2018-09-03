@@ -10,8 +10,8 @@ import (
 type Layout struct {
 	Header  Box
 	Content ScaleBox // AutoResize
-	RSide   Box
-	LSide   Box
+	RSide   VerticalBox
+	LSide   VerticalBox
 	Footer  Box
 }
 
@@ -20,6 +20,12 @@ func (l Layout) Draw(dc *gg.Context) {
 	if l.Header != nil {
 		l.Header.Draw(dc, 0, 0)
 		_, cY = l.Header.Size()
+	}
+
+	if l.LSide != nil {
+		h := float64(dc.Height()) - cY
+		l.LSide.Draw(dc, l.LSide.Width(), h, 0, cY)
+		cX += l.LSide.Width()
 	}
 	if l.Content != nil {
 		w := float64(dc.Width()) - cX
@@ -36,6 +42,12 @@ type Scale struct {
 type Box interface {
 	Draw(dc *gg.Context, x, y float64)
 	Size() (w, h float64)
+}
+
+// VerticalBox is has fixed width and auto tune height
+type VerticalBox interface {
+	Draw(dc *gg.Context, w, h, x, y float64)
+	Width() (w float64)
 }
 
 type ScaleBox interface {
@@ -68,4 +80,26 @@ func (t TextBox) Draw(dc *gg.Context, x, y float64) {
 	for i, v := range t.Text {
 		dc.DrawString(v, x, y+fontHeight*float64(i+1))
 	}
+}
+
+type VerticalBoxMargine struct {
+	drawfn func(dc *gg.Context, w, h, x, y float64)
+	margin float64
+	width  float64
+}
+
+func NewVerticalBoxMargine(drawfn func(dc *gg.Context, w, h, x, y float64), margin, width float64) VerticalBoxMargine {
+	return VerticalBoxMargine{
+		drawfn: drawfn,
+		margin: margin,
+		width:  width,
+	}
+}
+
+func (v VerticalBoxMargine) Draw(dc *gg.Context, w, h, x, y float64) {
+	v.drawfn(dc, w-v.margin*2, h-v.margin*2, x+v.margin, y+v.margin)
+}
+
+func (v VerticalBoxMargine) Width() float64 {
+	return v.width
 }
