@@ -9,6 +9,7 @@ import (
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/stretchr/testify/assert"
 	"github.com/uzuna/lgimage"
+	"github.com/uzuna/lgimage/ease"
 
 	"github.com/fogleman/gg"
 )
@@ -270,6 +271,64 @@ func TestGGColorScale(t *testing.T) {
 		}
 		cs := lgimage.ColorScale{
 			X:    120,
+			Y:    0,
+			W:    40,
+			H:    300,
+			Vmin: 0,
+			Vmax: 200,
+			Cfn:  cfn,
+			Font: fLat16,
+		}
+
+		cs.DrawVertical(dc)
+	}
+	{
+		cmap := make(map[string]color.Color)
+		cmap["under"] = color.NRGBA{0, 0, 180, 255}
+		cmap["over"] = color.NRGBA{180, 0, 0, 255}
+
+		//
+		cfn := lgimage.ValueMapWithFunc{
+			Vmin: 0,
+			Vmax: 200,
+			ColorFunc: func(vi float64) color.Color {
+				ve := ease.EaseOutQuad(vi)
+				c := colorful.Hsv(230-ve*230, 0.8, 0.72)
+				return c
+			},
+			ExceptionList: cmap,
+		}
+		cs := lgimage.ColorScale{
+			X:    180,
+			Y:    0,
+			W:    40,
+			H:    300,
+			Vmin: 0,
+			Vmax: 200,
+			Cfn:  cfn,
+			Font: fLat16,
+		}
+
+		cs.DrawVertical(dc)
+	}
+	{
+		cmap := make(map[string]color.Color)
+		cmap["under"] = color.NRGBA{0, 0, 180, 255}
+		cmap["over"] = color.NRGBA{180, 0, 0, 255}
+
+		//
+		cfn := lgimage.ValueMapWithFunc{
+			Vmin: 0,
+			Vmax: 200,
+			ColorFunc: func(vi float64) color.Color {
+				ve := ease.EaseInQuad(vi)
+				c := colorful.Hsv(230-ve*230, 0.8, 0.72)
+				return c
+			},
+			ExceptionList: cmap,
+		}
+		cs := lgimage.ColorScale{
+			X:    240,
 			Y:    0,
 			W:    40,
 			H:    300,
