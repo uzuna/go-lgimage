@@ -76,9 +76,9 @@ func (c ColorScale) DrawVertical(dc *gg.Context) {
 		dc.Fill()
 	}
 
-	// 数値を埋める
+	// Paint scale
 	splitLen := 20
-	zY = c.Y + numH // 書き込み富順高さを指定
+	zY = c.Y + numH // 書き込み基準高さを指定
 	dy = numH / float64(splitLen)
 	dv := (c.Vmax - c.Vmin) / float64(splitLen)
 	step := int(math.Ceil(fontHeight * 3 / dv))

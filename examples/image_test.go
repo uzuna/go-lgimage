@@ -67,7 +67,7 @@ func TestGGTextsize(t *testing.T) {
 		Text:     []string{"Code1", "nCode2", "code3"},
 		Color:    color.NRGBA{245, 23, 22, 220},
 	}
-	tbox.Draw(dc, 0, 0)
+	tbox.Draw(dc, 0, 0, float64(dc.Width()), float64(dc.Height()))
 
 	dc.SavePNG("font.png")
 }
@@ -116,8 +116,17 @@ func TestGGWithBoxLayout(t *testing.T) {
 	}
 	l.Header = tbox
 
+	tboxbtm := lgimage.TextBox{
+		FontFace: fLat16,
+		Text:     []string{"Footx"},
+		Color:    color.NRGBA{12, 90, 200, 220},
+		Align:    "right",
+	}
+	l.Footer = tboxbtm
+
 	// Scale box
-	content := func(dc *gg.Context, w, h, x, y float64) {
+	content := func(dc *gg.Context, x, y, w, h float64) {
+
 		var min, ofx float64
 		min = w
 		if min > h {
@@ -150,7 +159,7 @@ func TestGGWithBoxLayout(t *testing.T) {
 
 	// Left Side
 	fLat12, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 12)
-	lsfn := func(dc *gg.Context, w, h, x, y float64) {
+	lsfn := func(dc *gg.Context, x, y, w, h float64) {
 		cmap := make(map[string]color.Color)
 		cmap["under"] = color.NRGBA{0, 0, 180, 255}
 		cmap["over"] = color.NRGBA{180, 0, 0, 255}
