@@ -22,7 +22,7 @@ func (l Layout) Draw(dc *gg.Context) {
 		l.Header.Draw(dc, 0, 0, float64(dc.Width()), tY)
 	}
 	if l.Footer != nil {
-		_, bY = l.Header.Size()
+		_, bY = l.Footer.Size()
 		y := float64(dc.Height()) - bY
 		l.Footer.Draw(dc, 0, y, float64(dc.Width()), bY)
 	}
