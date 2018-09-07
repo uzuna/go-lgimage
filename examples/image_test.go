@@ -290,7 +290,7 @@ func TestGGColorScale(t *testing.T) {
 		//
 		cfn := lgimage.ValueMapWithFunc{
 			Vmin: 0,
-			Vmax: 200,
+			Vmax: 1,
 			ColorFunc: func(vi float64) color.Color {
 				ve := ease.EaseOutQuad(vi)
 				c := colorful.Hsv(230-ve*230, 0.8, 0.72)
@@ -304,7 +304,7 @@ func TestGGColorScale(t *testing.T) {
 			W:    40,
 			H:    300,
 			Vmin: 0,
-			Vmax: 200,
+			Vmax: 1,
 			Cfn:  cfn,
 			Font: fLat16,
 		}
@@ -319,7 +319,7 @@ func TestGGColorScale(t *testing.T) {
 		//
 		cfn := lgimage.ValueMapWithFunc{
 			Vmin: 0,
-			Vmax: 200,
+			Vmax: 2105570,
 			ColorFunc: func(vi float64) color.Color {
 				ve := ease.EaseInQuad(vi)
 				c := colorful.Hsv(230-ve*230, 0.8, 0.72)
@@ -333,7 +333,7 @@ func TestGGColorScale(t *testing.T) {
 			W:    40,
 			H:    300,
 			Vmin: 0,
-			Vmax: 200,
+			Vmax: 2105570,
 			Cfn:  cfn,
 			Font: fLat16,
 		}

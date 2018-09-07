@@ -80,8 +80,8 @@ func (c ColorScale) DrawVertical(dc *gg.Context) {
 	splitLen := 20
 	zY = c.Y + numH // 書き込み基準高さを指定
 	dy = numH / float64(splitLen)
-	dv := (c.Vmax - c.Vmin) / float64(splitLen)
-	step := int(math.Ceil(fontHeight * 3 / dv))
+	dv := (c.Vmax - c.Vmin) / float64(splitLen-1)
+	step := 4 // 固定値5分割。できればheightの長さに合わせたい。
 
 	for i := 0; i < splitLen; i++ {
 		v, _ := NewValue(c.Vmin + (dv * float64(i)))
@@ -96,7 +96,11 @@ func (c ColorScale) DrawVertical(dc *gg.Context) {
 		// Text
 		if i == 0 || i == splitLen-1 || i%step == 0 {
 			dc.SetColor(color.NRGBA{255, 255, 255, 255})
-			dc.DrawStringAnchored(fmt.Sprintf("%.1f ", v.Value().(float64)), c.X+c.W-1, y, 1, 0.8)
+			if v.Value().(float64) > 1000 {
+				dc.DrawStringAnchored(fmt.Sprintf("%.2g", v.Value().(float64)), c.X+c.W-1, y, 1, 0.8)
+			} else {
+				dc.DrawStringAnchored(fmt.Sprintf("%.1f", v.Value().(float64)), c.X+c.W-1, y, 1, 0.8)
+			}
 			dc.Fill()
 		}
 	}
