@@ -32,4 +32,4 @@ Newrelicのように大きなテールが出る場合はhistgrmは95percentile�
 https://newrelic.degica.com/docs/data-analysis/user-interface-functions/view-your-data/histograms-viewing-data-distribution
 
 - エイリアス周りの処理ピクセル小数点以下の取り扱いを考える
-    chartとしては辺に混ざると濁るので整数値に切りなおすのがベター
+    境界面がピクセルに対して水平垂直の場合は境界面に意図しない線ができることがあるので整数値に切りなおすのがベター

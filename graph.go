@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"sort"
 
 	"github.com/fogleman/gg"
 	"golang.org/x/image/font"
@@ -34,8 +35,18 @@ func (c ColorScale) DrawVertical(dc *gg.Context) {
 	dy := fontHeight
 	zY := c.Y + c.H // 書き込み富順高さを指定
 
-	// 下からexceptionを埋めていく
+	var exeptionKeys []string
+	exmap := make(map[string]int)
 	for i, v := range list {
+		exeptionKeys = append(exeptionKeys, v.String)
+		exmap[v.String] = i
+	}
+	sort.Strings(exeptionKeys)
+
+	// 下からexceptionを埋めていく
+	for i, key := range exeptionKeys {
+		iv := exmap[key]
+		v := list[iv]
 		y := zY - dy*float64(i+1)
 
 		// Color Rect
@@ -95,28 +106,164 @@ type Bins struct {
 // Histgram is render of histgram
 type Histgram struct {
 	X, Y, W, H float64 // Position
-	Bins       []Bins
+	Bins       BinsWithException
+	Font       font.Face
 }
 
 func (c Histgram) DrawVertical(dc *gg.Context) {
-	length := len(c.Bins)
+	length := len(c.Bins.Bins)
+	lengthExp := len(c.Bins.ExceptionBin)
 	maxFreq := 0.0
-	bHeight := c.H / float64(length)
-	for _, v := range c.Bins {
+
+	for _, v := range c.Bins.Bins {
 		if v.Frequency > maxFreq {
 			maxFreq = v.Frequency
+		}
+	}
+	for _, v := range c.Bins.ExceptionBin {
+		if v > maxFreq {
+			maxFreq = v
 		}
 	}
 	bWidth := c.W / maxFreq
 	zY := c.H + c.Y
 
+	// fontの高さを取得
+	dc.SetFontFace(c.Font)
+	fontHeight := dc.FontHeight()
+	excH := float64(lengthExp) * fontHeight
+	numH := c.H - excH
+
+	dy := fontHeight
+
+	// exception
+	var exeptionKeys []string
+	exmap := make(map[string]float64)
+	for k, v := range c.Bins.ExceptionBin {
+		exeptionKeys = append(exeptionKeys, k)
+		exmap[k] = v
+	}
+	sort.Strings(exeptionKeys)
+
+	for i, k := range exeptionKeys {
+		offY := dy * float64(i)
+		dc.DrawRectangle(c.X, zY-offY-dy, bWidth*exmap[k], dy)
+
+		dc.SetColor(color.NRGBA{255, 80, 80, 255})
+		dc.StrokePreserve()
+		dc.SetColor(color.NRGBA{128, 200, 255, 180})
+		dc.Fill()
+	}
+
+	//数値系
+	zY = c.Y + numH
+	bHeight := numH / float64(length)
 	for i := 0; i < length; i++ {
 		offY := bHeight * float64(i)
-		dc.DrawRectangle(c.X, zY-offY-bHeight, bWidth*c.Bins[i].Frequency, bHeight)
+		dc.DrawRectangle(c.X, zY-offY-bHeight, bWidth*c.Bins.Bins[i].Frequency, bHeight)
 
 		dc.SetColor(color.NRGBA{255, 255, 255, 255})
 		dc.StrokePreserve()
 		dc.SetColor(color.NRGBA{128, 200, 255, 180})
 		dc.Fill()
 	}
+}
+
+// HistgramTotalizer 集計器
+type HistgramTotalizer struct {
+	Vmin, Vmax, vWidth float64
+	Step               int
+	count              int
+	bins               []int
+	exbins             map[string]float64
+}
+
+// NewHistgramTotalizer is construction HistgramTotalizer
+func NewHistgramTotalizer(vmin, vmax float64, step int, exceptions []string) *HistgramTotalizer {
+	width := (vmax - vmin) / float64(step)
+	exbin := make(map[string]float64)
+	for _, v := range exceptions {
+		exbin[v] = 0
+	}
+	return &HistgramTotalizer{
+		Vmin: vmin, Vmax: vmax, Step: step,
+		vWidth: width,
+		bins:   make([]int, step),
+		exbins: exbin,
+	}
+}
+
+func (h *HistgramTotalizer) Add(v Value) {
+	switch x := v.Value().(type) {
+	case float64:
+		// over range
+		if x > h.Vmax {
+			if _, ok := h.exbins["over"]; !ok {
+				h.exbins["over"] = 0
+			}
+			h.exbins["over"]++
+		} else if x < h.Vmin {
+			if _, ok := h.exbins["under"]; !ok {
+				h.exbins["under"] = 0
+			}
+			h.exbins["under"]++
+		} else {
+			x := math.Floor(x / h.vWidth)
+			h.bins[int(x)]++
+		}
+	case string:
+		if _, ok := h.exbins[x]; ok {
+			h.exbins[x] = 0
+		}
+		h.exbins[x]++
+	}
+}
+
+func (h *HistgramTotalizer) ExBins() BinsWithException {
+	bins := make([]Bins, h.Step)
+	for i, v := range h.bins {
+		bins[i] = Bins{
+			Vmin:      float64(i) * h.vWidth,
+			Vmax:      float64(i+1) * h.vWidth,
+			Frequency: float64(v),
+		}
+	}
+
+	return BinsWithException{
+		Bins:         bins,
+		ExceptionBin: h.exbins,
+	}
+}
+
+type BinsWithException struct {
+	Bins         []Bins             // histgrams
+	ExceptionBin map[string]float64 // 数値以外
+}
+
+// ColorScale is provide draw the color scale
+type ColorScaleWithHistgram struct {
+	X, Y, W, H, Middle float64           // Position
+	Vmin, Vmax         float64           // Value Scale
+	Cfn                ColorMap          // Color Function
+	Font               font.Face         // value font
+	ExBins             BinsWithException // histgram情報
+}
+
+func (c ColorScaleWithHistgram) DrawVertical(dc *gg.Context) {
+	// Set ColorScale
+	cs := ColorScale{
+		X: c.X, Y: c.Y, W: c.Middle, H: c.H,
+		Vmin: c.Vmin, Vmax: c.Vmax,
+		Cfn:  c.Cfn,
+		Font: c.Font,
+	}
+	cs.DrawVertical(dc)
+
+	// Set Histgram
+	hs := Histgram{
+		X: c.Middle, Y: c.Y, W: c.W - c.Middle, H: c.H,
+		Bins: c.ExBins,
+		Font: c.Font,
+	}
+	hs.DrawVertical(dc)
 }
