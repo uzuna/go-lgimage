@@ -9,7 +9,6 @@ import (
 
 	"github.com/fogleman/gg"
 	colorful "github.com/lucasb-eyer/go-colorful"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestHistgram(t *testing.T) {
@@ -33,9 +32,7 @@ func TestHistgram(t *testing.T) {
 	dc := gg.NewContext(300, 300)
 
 	hist.DrawVertical(dc)
-
-	err := dc.SavePNG("demo/hist.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "hist.png")
 }
 
 func TestCSHistgram(t *testing.T) {
@@ -77,8 +74,7 @@ func TestCSHistgram(t *testing.T) {
 
 	chs.DrawVertical(dc)
 
-	err := dc.SavePNG("demo/colorhist.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "colorhist.png")
 }
 
 // 中間点を最高にとる

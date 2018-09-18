@@ -36,7 +36,7 @@ func TestGG(t *testing.T) {
 	dc.DrawStringAnchored("Anchor Text", float64(W/2), float64(H/2), 0.5, 0.5)
 	dc.DrawString("Fill Text", float64(W/2), float64(H/2))
 
-	dc.SavePNG("./demo/demo.png")
+	savepng(t, dc, "demo.png")
 }
 
 func TestGGTextsize(t *testing.T) {
@@ -68,7 +68,7 @@ func TestGGTextsize(t *testing.T) {
 	}
 	tbox.Draw(dc, 0, 0, float64(dc.Width()), float64(dc.Height()))
 
-	dc.SavePNG("./demo/font.png")
+	savepng(t, dc, "font.png")
 }
 
 func TestGGMatrix(t *testing.T) {
@@ -98,8 +98,7 @@ func TestGGMatrix(t *testing.T) {
 
 	m.Draw(dc, dfn)
 
-	err := dc.SavePNG("./demo/out.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "out.png")
 }
 
 func TestGGWithBoxLayout(t *testing.T) {
@@ -191,16 +190,14 @@ func TestGGWithBoxLayout(t *testing.T) {
 	// Draw
 	l.Draw(dc)
 
-	err := dc.SavePNG("./demo/layout_r1.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "layout_r1.png")
 
 	dc2 := gg.NewContext(300, 300)
 	tbox.Text = []string{"Title: Matrix demo", "Desc: Color Matrix", "X: 10, Y: 10"}
 	l.Header = tbox
 	l.Draw(dc2)
 
-	err = dc2.SavePNG("./demo/layout_r3.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "layout_r3.png")
 }
 
 func TestGGColorScale(t *testing.T) {
@@ -339,8 +336,7 @@ func TestGGColorScale(t *testing.T) {
 		cs.DrawVertical(dc)
 	}
 
-	err := dc.SavePNG("./demo/colorscale.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "colorscale.png")
 }
 
 func BenchmarkRenderInsntance(b *testing.B) {
@@ -390,4 +386,11 @@ func BenchmarkRenderToBuffer(b *testing.B) {
 		dc.Fill()
 		dc.EncodePNG(buf)
 	}
+}
+
+func savepng(t *testing.T, dc *gg.Context, filename string) {
+	b := new(bytes.Buffer)
+	err := dc.EncodePNG(b)
+	assert.NoError(t, err)
+	assert.True(t, b.Len() > 100)
 }
