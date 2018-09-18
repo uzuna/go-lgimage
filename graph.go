@@ -90,6 +90,10 @@ func (c ColorScale) DrawVertical(dc *gg.Context) {
 			dc.SetColor(color.NRGBA{255, 255, 255, 255})
 			if v.Value().(float64) > 1000 {
 				dc.DrawStringAnchored(fmt.Sprintf("%.2g", v.Value().(float64)), c.X+c.W-1, y, 1, 0.8)
+			} else if v.Value().(float64) < 0.1 {
+				dc.DrawStringAnchored(fmt.Sprintf("%.3f", v.Value().(float64)), c.X+c.W-1, y, 1, 0.8)
+			} else if v.Value().(float64) < 1 {
+				dc.DrawStringAnchored(fmt.Sprintf("%.2f", v.Value().(float64)), c.X+c.W-1, y, 1, 0.8)
 			} else {
 				dc.DrawStringAnchored(fmt.Sprintf("%.1f", v.Value().(float64)), c.X+c.W-1, y, 1, 0.8)
 			}
@@ -180,7 +184,7 @@ type HistgramTotalizer struct {
 
 // NewHistgramTotalizer is construction HistgramTotalizer
 func NewHistgramTotalizer(vmin, vmax float64, step int, exceptions []string) *HistgramTotalizer {
-	width := (vmax - vmin) / float64(step)
+	width := (vmax - vmin) / float64(step-1)
 	exbin := make(map[string]float64)
 	for _, v := range exceptions {
 		exbin[v] = 0
@@ -197,7 +201,7 @@ func (h *HistgramTotalizer) Add(v Value) {
 	switch x := v.Value().(type) {
 	case float64:
 		// over range
-		if x > h.Vmax {
+		if x >= h.Vmax {
 			if _, ok := h.exbins["over"]; !ok {
 				h.exbins["over"] = 0
 			}
@@ -261,7 +265,7 @@ func (c ColorScaleWithHistgram) DrawVertical(dc *gg.Context) {
 
 	// Set Histgram
 	hs := Histgram{
-		X: c.Middle, Y: c.Y, W: c.W - c.Middle, H: c.H,
+		X: c.X + c.Middle, Y: c.Y, W: c.W - c.Middle, H: c.H,
 		Bins: c.ExBins,
 		Font: c.Font,
 	}

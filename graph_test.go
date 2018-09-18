@@ -9,8 +9,6 @@ import (
 
 	"github.com/fogleman/gg"
 	colorful "github.com/lucasb-eyer/go-colorful"
-	"github.com/stretchr/testify/assert"
-	"github.com/uzuna/lgimage/ease"
 )
 
 func TestHistgram(t *testing.T) {
@@ -27,16 +25,14 @@ func TestHistgram(t *testing.T) {
 	// log.Println(bins)
 	// bin詰
 	hist := Histgram{
-		0, 0, 30, 300, hst.ExBins(),
+		40, 0, 30, 300, hst.ExBins(),
 		fLat16,
 	}
 	// draw test
 	dc := gg.NewContext(300, 300)
 
 	hist.DrawVertical(dc)
-
-	err := dc.SavePNG("demo/hist.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "hist.png")
 }
 
 func TestCSHistgram(t *testing.T) {
@@ -52,7 +48,7 @@ func TestCSHistgram(t *testing.T) {
 		Vmin: 0,
 		Vmax: 200,
 		ColorFunc: func(vi float64) color.Color {
-			ve := ease.EaseInQuad(vi)
+			ve := EaseInQuad(vi)
 			c := colorful.Hsv(230-ve*230, 0.8, 0.72)
 			return c
 		},
@@ -78,8 +74,7 @@ func TestCSHistgram(t *testing.T) {
 
 	chs.DrawVertical(dc)
 
-	err := dc.SavePNG("demo/colorhist.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "colorhist.png")
 }
 
 // 中間点を最高にとる
@@ -107,7 +102,7 @@ func createQuadbins(vmin, anchor, vmax, max float64, length int) []Bins {
 		bmax := (width * float64(i+1))
 
 		x := (bmin + (width / 2)) / anchor
-		x = ease.EaseInQuad(x)
+		x = EaseInQuad(x)
 		bins = append(bins, Bins{bmin, bmax, x * max})
 	}
 	for i := anchorBin; i < length; i++ {
@@ -115,7 +110,7 @@ func createQuadbins(vmin, anchor, vmax, max float64, length int) []Bins {
 		bmax := (width * float64(i+1))
 
 		x := 1 - ((bmin - anchor + (width / 2)) / (vmax - anchor))
-		x = ease.EaseInQuad(x)
+		x = EaseInQuad(x)
 		bins = append(bins, Bins{bmin, bmax, x * max})
 	}
 

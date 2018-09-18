@@ -1,4 +1,4 @@
-package ease
+package lgimage
 
 func EaseOutQuad(t float64) float64 {
 	return t * (2 - t)

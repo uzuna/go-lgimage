@@ -1,0 +1,16 @@
+language: go
+
+go:
+  - "1.11.x"
+
+env:
+  global:
+    - TZ=Asia/Tokyo
+
+before_install:
+  - go get github.com/golang/dep/...
+install:
+  - $GOPATH/bin/dep ensure
+
+script:
+ - make test

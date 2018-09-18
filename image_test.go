@@ -1,4 +1,4 @@
-package main
+package lgimage
 
 import (
 	"bytes"
@@ -8,8 +8,6 @@ import (
 
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/stretchr/testify/assert"
-	"github.com/uzuna/lgimage"
-	"github.com/uzuna/lgimage/ease"
 
 	"github.com/fogleman/gg"
 )
@@ -34,11 +32,11 @@ func TestGG(t *testing.T) {
 	dc.DrawCircle(float64(W/2), float64(H/2), 120)
 	dc.SetRGBA(245, 23, 22, 0.8)
 	dc.Fill()
-	dc.LoadFontFace("../assets/Lato-Regular.ttf", 32)
+	dc.LoadFontFace("./assets/Lato-Regular.ttf", 32)
 	dc.DrawStringAnchored("Anchor Text", float64(W/2), float64(H/2), 0.5, 0.5)
 	dc.DrawString("Fill Text", float64(W/2), float64(H/2))
 
-	dc.SavePNG("demo.png")
+	savepng(t, dc, "demo.png")
 }
 
 func TestGGTextsize(t *testing.T) {
@@ -46,8 +44,8 @@ func TestGGTextsize(t *testing.T) {
 	H := 300
 	dc := gg.NewContext(W, H)
 
-	fLat16, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 16)
-	fLat64, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 64)
+	fLat16, _ := gg.LoadFontFace("./assets/Lato-Regular.ttf", 16)
+	fLat64, _ := gg.LoadFontFace("./assets/Lato-Regular.ttf", 64)
 
 	dc.DrawRectangle(10, 80, 280, 140)
 	dc.SetRGBA(245, 23, 22, 0.8)
@@ -63,14 +61,14 @@ func TestGGTextsize(t *testing.T) {
 	dc.DrawString("64 lag2", 60, float64(H/2)+offset)
 
 	// Text Box
-	tbox := lgimage.TextBox{
+	tbox := TextBox{
 		FontFace: fLat16,
 		Text:     []string{"Code1", "nCode2", "code3"},
 		Color:    color.NRGBA{245, 23, 22, 220},
 	}
 	tbox.Draw(dc, 0, 0, float64(dc.Width()), float64(dc.Height()))
 
-	dc.SavePNG("font.png")
+	savepng(t, dc, "font.png")
 }
 
 func TestGGMatrix(t *testing.T) {
@@ -81,7 +79,7 @@ func TestGGMatrix(t *testing.T) {
 	width := 300.0
 	height := 300.0
 
-	m := lgimage.Matrix{
+	m := Matrix{
 		X: 0, Y: 0,
 		W: width, H: height,
 		Row: row, Col: col,
@@ -100,24 +98,23 @@ func TestGGMatrix(t *testing.T) {
 
 	m.Draw(dc, dfn)
 
-	err := dc.SavePNG("out.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "out.png")
 }
 
 func TestGGWithBoxLayout(t *testing.T) {
 	dc := gg.NewContext(300, 300)
 
-	l := lgimage.Layout{}
+	l := Layout{}
 	// Header
-	fLat16, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 16)
-	tbox := lgimage.TextBox{
+	fLat16, _ := gg.LoadFontFace("./assets/Lato-Regular.ttf", 16)
+	tbox := TextBox{
 		FontFace: fLat16,
 		Text:     []string{"Code1"},
 		Color:    color.NRGBA{245, 23, 22, 220},
 	}
 	l.Header = tbox
 
-	tboxbtm := lgimage.TextBox{
+	tboxbtm := TextBox{
 		FontFace: fLat16,
 		Text:     []string{"Footx"},
 		Color:    color.NRGBA{12, 90, 200, 220},
@@ -137,7 +134,7 @@ func TestGGWithBoxLayout(t *testing.T) {
 		col := uint64(10)
 		row := uint64(10)
 
-		m := lgimage.Matrix{
+		m := Matrix{
 			X: x + ofx, Y: y,
 			W: min, H: min,
 			Row: row, Col: col,
@@ -156,16 +153,16 @@ func TestGGWithBoxLayout(t *testing.T) {
 
 		m.Draw(dc, dfn)
 	}
-	l.Content = lgimage.ScaleBoxFunc(content)
+	l.Content = ScaleBoxFunc(content)
 
 	// Left Side
-	fLat12, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 12)
+	fLat12, _ := gg.LoadFontFace("./assets/Lato-Regular.ttf", 12)
 	lsfn := func(dc *gg.Context, x, y, w, h float64) {
 		cmap := make(map[string]color.Color)
 		cmap["under"] = color.NRGBA{0, 0, 180, 255}
 		cmap["over"] = color.NRGBA{180, 0, 0, 255}
 
-		cfn := lgimage.ValueMapWithFunc{
+		cfn := ValueMapWithFunc{
 			Vmin: 0,
 			Vmax: 200,
 			ColorFunc: func(vi float64) color.Color {
@@ -174,7 +171,7 @@ func TestGGWithBoxLayout(t *testing.T) {
 			},
 			ExceptionList: cmap,
 		}
-		cs := lgimage.ColorScale{
+		cs := ColorScale{
 			X:    x,
 			Y:    y,
 			W:    w,
@@ -187,35 +184,33 @@ func TestGGWithBoxLayout(t *testing.T) {
 
 		cs.DrawVertical(dc)
 	}
-	lside := lgimage.NewVerticalBoxMargine(lsfn, 4.0, 36)
+	lside := NewVerticalBoxMargine(lsfn, 4.0, 36)
 	l.LSide = lside
 
 	// Draw
 	l.Draw(dc)
 
-	err := dc.SavePNG("layout_r1.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "layout_r1.png")
 
 	dc2 := gg.NewContext(300, 300)
 	tbox.Text = []string{"Title: Matrix demo", "Desc: Color Matrix", "X: 10, Y: 10"}
 	l.Header = tbox
 	l.Draw(dc2)
 
-	err = dc2.SavePNG("layout_r3.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "layout_r3.png")
 }
 
 func TestGGColorScale(t *testing.T) {
 	dc := gg.NewContext(300, 300)
-	fLat16, _ := gg.LoadFontFace("../assets/Lato-Regular.ttf", 14)
-	cs := lgimage.ColorScale{
+	fLat16, _ := gg.LoadFontFace("./assets/Lato-Regular.ttf", 14)
+	cs := ColorScale{
 		X:    0,
 		Y:    0,
 		W:    40,
 		H:    300,
 		Vmin: 0,
 		Vmax: 200,
-		Cfn: lgimage.ColorMapFunc(func(x lgimage.Value) color.Color {
+		Cfn: ColorMapFunc(func(x Value) color.Color {
 			v := x.Value().(float64)
 			return color.NRGBA{uint8(v / 200 * 255), 128, 128, 255}
 		}),
@@ -232,7 +227,7 @@ func TestGGColorScale(t *testing.T) {
 		cmap["nil"] = color.NRGBA{0, 255, 255, 255}
 
 		//
-		cfn := lgimage.ValueMapWithFunc{
+		cfn := ValueMapWithFunc{
 			Vmin: 0,
 			Vmax: 200,
 			ColorFunc: func(vi float64) color.Color {
@@ -240,7 +235,7 @@ func TestGGColorScale(t *testing.T) {
 			},
 			ExceptionList: cmap,
 		}
-		cs := lgimage.ColorScale{
+		cs := ColorScale{
 			X:    60,
 			Y:    0,
 			W:    40,
@@ -260,7 +255,7 @@ func TestGGColorScale(t *testing.T) {
 		cmap["over"] = color.NRGBA{180, 0, 0, 255}
 
 		//
-		cfn := lgimage.ValueMapWithFunc{
+		cfn := ValueMapWithFunc{
 			Vmin: 0,
 			Vmax: 200,
 			ColorFunc: func(vi float64) color.Color {
@@ -269,7 +264,7 @@ func TestGGColorScale(t *testing.T) {
 			},
 			ExceptionList: cmap,
 		}
-		cs := lgimage.ColorScale{
+		cs := ColorScale{
 			X:    120,
 			Y:    0,
 			W:    40,
@@ -288,17 +283,17 @@ func TestGGColorScale(t *testing.T) {
 		cmap["over"] = color.NRGBA{180, 0, 0, 255}
 
 		//
-		cfn := lgimage.ValueMapWithFunc{
+		cfn := ValueMapWithFunc{
 			Vmin: 0,
 			Vmax: 1,
 			ColorFunc: func(vi float64) color.Color {
-				ve := ease.EaseOutQuad(vi)
+				ve := EaseOutQuad(vi)
 				c := colorful.Hsv(230-ve*230, 0.8, 0.72)
 				return c
 			},
 			ExceptionList: cmap,
 		}
-		cs := lgimage.ColorScale{
+		cs := ColorScale{
 			X:    180,
 			Y:    0,
 			W:    40,
@@ -317,17 +312,17 @@ func TestGGColorScale(t *testing.T) {
 		cmap["over"] = color.NRGBA{180, 0, 0, 255}
 
 		//
-		cfn := lgimage.ValueMapWithFunc{
+		cfn := ValueMapWithFunc{
 			Vmin: 0,
 			Vmax: 2105570,
 			ColorFunc: func(vi float64) color.Color {
-				ve := ease.EaseInQuad(vi)
+				ve := EaseInQuad(vi)
 				c := colorful.Hsv(230-ve*230, 0.8, 0.72)
 				return c
 			},
 			ExceptionList: cmap,
 		}
-		cs := lgimage.ColorScale{
+		cs := ColorScale{
 			X:    240,
 			Y:    0,
 			W:    40,
@@ -341,8 +336,7 @@ func TestGGColorScale(t *testing.T) {
 		cs.DrawVertical(dc)
 	}
 
-	err := dc.SavePNG("colorscale.png")
-	assert.NoError(t, err)
+	savepng(t, dc, "colorscale.png")
 }
 
 func BenchmarkRenderInsntance(b *testing.B) {
@@ -360,7 +354,7 @@ func BenchmarkRenderMatrix100(b *testing.B) {
 	width := 300.0
 	height := 300.0
 
-	m := lgimage.Matrix{
+	m := Matrix{
 		X: 0, Y: 0,
 		W: width, H: height,
 		Row: row, Col: col,
@@ -392,4 +386,11 @@ func BenchmarkRenderToBuffer(b *testing.B) {
 		dc.Fill()
 		dc.EncodePNG(buf)
 	}
+}
+
+func savepng(t *testing.T, dc *gg.Context, filename string) {
+	b := new(bytes.Buffer)
+	err := dc.EncodePNG(b)
+	assert.NoError(t, err)
+	assert.True(t, b.Len() > 100)
 }
