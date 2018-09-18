@@ -27,7 +27,7 @@ func TestHistgram(t *testing.T) {
 	// log.Println(bins)
 	// bin詰
 	hist := Histgram{
-		0, 0, 30, 300, hst.ExBins(),
+		40, 0, 30, 300, hst.ExBins(),
 		fLat16,
 	}
 	// draw test
