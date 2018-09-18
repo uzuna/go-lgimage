@@ -10,7 +10,6 @@ import (
 	"github.com/fogleman/gg"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/stretchr/testify/assert"
-	"github.com/uzuna/lgimage/ease"
 )
 
 func TestHistgram(t *testing.T) {
@@ -52,7 +51,7 @@ func TestCSHistgram(t *testing.T) {
 		Vmin: 0,
 		Vmax: 200,
 		ColorFunc: func(vi float64) color.Color {
-			ve := ease.EaseInQuad(vi)
+			ve := EaseInQuad(vi)
 			c := colorful.Hsv(230-ve*230, 0.8, 0.72)
 			return c
 		},
@@ -107,7 +106,7 @@ func createQuadbins(vmin, anchor, vmax, max float64, length int) []Bins {
 		bmax := (width * float64(i+1))
 
 		x := (bmin + (width / 2)) / anchor
-		x = ease.EaseInQuad(x)
+		x = EaseInQuad(x)
 		bins = append(bins, Bins{bmin, bmax, x * max})
 	}
 	for i := anchorBin; i < length; i++ {
@@ -115,7 +114,7 @@ func createQuadbins(vmin, anchor, vmax, max float64, length int) []Bins {
 		bmax := (width * float64(i+1))
 
 		x := 1 - ((bmin - anchor + (width / 2)) / (vmax - anchor))
-		x = ease.EaseInQuad(x)
+		x = EaseInQuad(x)
 		bins = append(bins, Bins{bmin, bmax, x * max})
 	}
 
