@@ -212,7 +212,7 @@ func (h *HistgramTotalizer) Add(v Value) {
 			}
 			h.exbins["under"]++
 		} else {
-			x := math.Floor(x / h.vWidth)
+			x := math.Floor((x - h.Vmin) / h.vWidth)
 			h.bins[int(x)]++
 		}
 	case string:
