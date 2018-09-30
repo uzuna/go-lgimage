@@ -1,5 +1,6 @@
 package lgimage
 
+// reference from https://gist.github.com/gre/1650294
 func EaseOutQuad(t float64) float64 {
 	return t * (2 - t)
 }
